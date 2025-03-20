@@ -26,20 +26,25 @@ SECRET_KEY = 'django-insecure-^susv!6*i1p6&&=zn)itzcgb^27)(z4nz=q!_ml+od2%1%p&q$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost",
-                 "127.0.0.1", "http://localhost:8000"]
+ALLOWED_HOSTS = ["localhost","44.204.156.38","rd.kickinsaas.com",
+                 "127.0.0.1", "http://localhost:8000","https://44.204.156.38"]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+"https://main.dfzm886lwk9em.amplifyapp.com",
+"http://172.31.82.119",
     "http://127.0.0.1:3000",
-  
+
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    "http://127.0.0.1:3000"
-   
+"https://main.dfzm886lwk9em.amplifyapp.com",
+    "http://127.0.0.1:3000",
+"http://172.31.82.119/"
+
 ]
+
 
 
 # Application definition
