@@ -10,6 +10,7 @@ class ContactSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
+            "phone",
             "country",
             "location_id",
             "type",

@@ -55,9 +55,9 @@ class ContactServices:
         all_contacts = []
         start_after_id = None
         i=0
-        while i<=10:
+        while i<200:
             contacts = ContactServices.get_contacts(query, start_after_id)
-            print(len(contacts),i,end='\n\n')
+            print(len(all_contacts),i,end='\n\n')
             
             if not contacts:
                 break  # No more contacts
@@ -76,12 +76,14 @@ class ContactServices:
         """
         Bulk save contacts to the database.
         """
+        unique_contacts = {contact["id"]: contact for contact in contacts}.values()  # Remove duplicates
         contact_objects = [
             Contact(
                 id=contact["id"],
                 first_name=contact.get("firstName", ""),
                 last_name=contact.get("lastName", ""),
                 email=contact.get("email", ""),
+                phone=contact.get("phone",""),
                 country=contact.get("country", ""),
                 location_id=contact.get("locationId", ""),
                 type=contact.get("type", "lead"),
@@ -89,7 +91,7 @@ class ContactServices:
                 date_updated=datetime.fromisoformat(contact["dateUpdated"].replace("Z", "+00:00")) if contact.get("dateUpdated") else None,
                 dnd=contact.get("dnd", False),
             )
-            for contact in contacts
+            for contact in unique_contacts
         ]
 
         Contact.objects.bulk_create(
@@ -102,6 +104,8 @@ class ContactServices:
         ObjectCustomField = apps.get_model("custom_fields", "ObjectCustomField", require_ready=False)
 
         if ObjectCustomField:
+            unique_custom_fields = {(cf["id"], contact["id"]): cf for contact in unique_contacts for cf in contact.get("customFields", [])}.values()
+
             custom_field_objects = [
                 ObjectCustomField(
                     field_id=custom_field.get("id", ""),
@@ -109,7 +113,7 @@ class ContactServices:
                     content_type=ContentType.objects.get_for_model(Contact),
                     object_id=contact["id"],
                 )
-                for contact in contacts for custom_field in contact.get("customFields", [])
+                for contact in unique_contacts for custom_field in contact.get("customFields", [])
             ]
 
             if custom_field_objects:

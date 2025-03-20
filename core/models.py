@@ -4,10 +4,10 @@ from django.utils.timezone import now
 
 # Create your models here.
 class OAuthToken(models.Model):
-    access_token = models.CharField(max_length=500)
+    access_token = models.CharField()
     token_type = models.CharField(max_length=50, default="Brearer")
     expires_at = models.DateField() #save this from expires_in
-    refresh_token = models.CharField(max_length=500)
+    refresh_token = models.CharField()
     scope = models.CharField(max_length=500)
     userType = models.CharField(max_length=500)
     companyId = models.CharField(max_length=500)
