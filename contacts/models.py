@@ -11,12 +11,19 @@ class Contact(models.Model):
     country = models.CharField(max_length=10,null=True, blank=True)
     location_id = models.CharField(max_length=50, null=True, blank=True)
     type = models.CharField(max_length=20, choices=[("lead", "Lead"), ("customer", "Customer")],null=True, blank=True)
-    date_added = models.DateTimeField(default=now)  
+    date_added = models.DateTimeField(default=now )  
     date_updated = models.DateTimeField(auto_now=True)  
     dnd = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.email})"
+
+class WebhookLog(models.Model):
+    webhook_id = models.CharField(max_length=255, unique=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.webhook_id} : {self.received_at}"
 
 
 

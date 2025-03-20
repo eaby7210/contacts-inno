@@ -12,6 +12,8 @@ django-filter = "*"
 django-cors-headers = "*"
 setuptools = "*"
 gunicorn = "*"
+cryptography = "*"
+schedule = "*"
 
 [dev-packages]
 

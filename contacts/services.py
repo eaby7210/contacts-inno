@@ -55,7 +55,7 @@ class ContactServices:
         all_contacts = []
         start_after_id = None
         i=0
-        while i<200:
+        while True:
             contacts = ContactServices.get_contacts(query, start_after_id)
             print(len(all_contacts),i,end='\n\n')
             

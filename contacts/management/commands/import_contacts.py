@@ -1,10 +1,10 @@
-import csv
 import os
+import csv
 from datetime import datetime
-from django.conf import settings
 from django.core.management.base import BaseCommand
-from contacts.models import Contact 
-
+from django.conf import settings
+from contacts.models import Contact  
+from django.utils.timezone import now
 
 class Command(BaseCommand):
     help = "Import contacts from a CSV file into the Contact model"
@@ -26,11 +26,15 @@ class Command(BaseCommand):
             self.stderr.write(self.style.ERROR(f"File not found: {csv_file_path}"))
             return
 
-        contacts = []
-
         try:
             with open(csv_file_path, newline="", encoding="utf-8") as file:
                 reader = csv.DictReader(file)
+
+                contacts_to_create = []
+                contacts_to_update = []
+
+                # Load existing contacts once into a dictionary
+                existing_contacts = {c.id: c for c in Contact.objects.all()}
 
                 for row in reader:
                     contact_id = row.get("Contact Id", "").strip()
@@ -41,25 +45,43 @@ class Command(BaseCommand):
                     created = row.get("Created", "").strip()
                     last_activity = row.get("Last Activity", "").strip()
 
-                    # Convert dates to Python datetime
-                    created_at = self.parse_date(created)
-                    updated_at = self.parse_date(last_activity)
+                    created_at = self.parse_date(created) or now()
+                    updated_at = self.parse_date(last_activity) or created_at
 
-                    contacts.append(
-                        Contact(
-                            id=contact_id,
-                            first_name=first_name,
-                            last_name=last_name,
-                            email=email,
-                            phone=phone,
-                            date_added=created_at,
-                            date_updated=updated_at,
+                    if contact_id in existing_contacts:
+                        # Update existing contact
+                        contact = existing_contacts[contact_id]
+                        contact.first_name = first_name
+                        contact.last_name = last_name
+                        contact.email = email
+                        contact.phone = phone
+                        contact.date_added = created_at
+                        contact.date_updated = updated_at
+                        contacts_to_update.append(contact)
+                    else:
+                        # Create new contact
+                        contacts_to_create.append(
+                            Contact(
+                                id=contact_id,
+                                first_name=first_name,
+                                last_name=last_name,
+                                email=email,
+                                phone=phone,
+                                date_added=created_at,
+                                date_updated=updated_at,
+                            )
                         )
+
+                # Perform bulk operations
+                if contacts_to_create:
+                    Contact.objects.bulk_create(contacts_to_create)
+                if contacts_to_update:
+                    Contact.objects.bulk_update(
+                        contacts_to_update,
+                        ["first_name", "last_name", "email", "phone", "date_added", "date_updated"]
                     )
 
-            # Bulk create contacts
-            Contact.objects.bulk_create(contacts, ignore_conflicts=True)
-            self.stdout.write(self.style.SUCCESS(f"Successfully imported {len(contacts)} contacts."))
+            self.stdout.write(self.style.SUCCESS(f"Successfully imported {len(contacts_to_create)} new contacts and updated {len(contacts_to_update)} existing contacts."))
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error importing contacts: {e}"))
